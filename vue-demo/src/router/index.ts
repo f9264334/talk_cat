@@ -10,6 +10,16 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/new',
+      name: 'new',
+      component: () => import('../views/NewPage.vue'),
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('../views/ChatView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
