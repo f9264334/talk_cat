@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosHeaders } from 'axios'
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -6,10 +6,10 @@ const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL as string,
   // 设置请求超时时间
   timeout: 10000,
-  // 设置请求头
-  headers: {
+  // 设置请求头，使用AxiosHeaders对象
+  headers: new AxiosHeaders({
     'Content-Type': 'application/json'
-  },
+  }),
   // 允许携带凭证
   withCredentials: true
 })
@@ -21,12 +21,12 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('auth_token')
     // 如果token存在，添加到请求头
     if (token) {
-      // 确保headers是对象
+      // 确保headers是AxiosHeaders对象
       if (!config.headers) {
-        config.headers = {}
+        config.headers = new AxiosHeaders()
       }
-      // 添加Authorization头，格式为Bearer token
-      config.headers['Authorization'] = `Bearer ${token}`
+      // 使用AxiosHeaders的set方法添加Authorization头
+      config.headers.set('Authorization', `Bearer ${token}`)
     }
     return config
   },
