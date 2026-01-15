@@ -50,19 +50,24 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick, type Ref } from 'vue'
-import axios from 'axios'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-// 必须开启 withCredentials，和后端 setAllowCredentials(true) 对应
-axios.defaults.withCredentials = true;
-// 设置请求头为 JSON（适配后端 @RequestBody 接收）
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+import apiClient from '../utils/axiosConfig'
+
+// 定义组件props
+interface Props {
+  agent?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  agent: 'cat' // 默认使用cat编程agent
+})
+
 // 消息类型
 interface ChatMessage {
   role: 'user' | 'server'
   content: string
 }
-const apiBaseUrl = import.meta.env.VITE_API_URL as string
 // 聊天记录列表
 const chatList: Ref<ChatMessage[]> = ref([])
 // 输入框内容
@@ -135,20 +140,26 @@ const handleSend = async (): Promise<void> => {
   }
   try {
     // 2. 调用服务端接口，指定返回数据类型
-    const res = await axios.post<ApiResponse>(`${apiBaseUrl}/chat/startChat`, {
+    // 直接获取响应数据（响应拦截器已处理）
+    const response = await apiClient.post<any>('/chat/startChat', {
       message: msg,
+      agent: props.agent
     })
+    
+    // 使用unknown作为中间类型进行类型断言
+    const resultData = response as unknown as { content: string }
 
     // 3. 添加服务端回复到聊天列表
     chatList.value.push({
       role: 'server',
-      content: res.data.data.content,
+      content: resultData.content,
     })
   } catch (err) {
     // 异常处理
+    const errorMessage = (err as Error).message || '服务端出错啦，请稍后再试！'
     chatList.value.push({
       role: 'server',
-      content: '服务端出错啦，请稍后再试！',
+      content: errorMessage,
     })
     // 保守打印错误
     // eslint-disable-next-line no-console
@@ -159,13 +170,13 @@ const handleSend = async (): Promise<void> => {
   }
 }
 
-// 本地持久化键名
-const STORAGE_KEY = 'chat_demo_messages_v1'
+// 本地持久化键名（包含agent参数）
+const getStorageKey = () => `chat_demo_messages_${props.agent}_v1`
 
 // 将 chatList 保存到 localStorage
 const saveChatToStorage = () => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatList.value))
+    localStorage.setItem(getStorageKey(), JSON.stringify(chatList.value))
   } catch (e) {
     // ignore storage errors
   }
@@ -174,7 +185,7 @@ const saveChatToStorage = () => {
 // 从 localStorage 加载聊天记录
 const loadChatFromStorage = () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(getStorageKey())
     if (raw) {
       const parsed = JSON.parse(raw) as ChatMessage[]
       chatList.value = parsed
@@ -188,7 +199,7 @@ const loadChatFromStorage = () => {
 const clearChat = () => {
   chatList.value = []
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(getStorageKey())
   } catch (e) {
     // ignore
   }
