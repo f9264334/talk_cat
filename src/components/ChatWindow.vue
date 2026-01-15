@@ -53,7 +53,10 @@ import { ref, watch, onMounted, nextTick, type Ref } from 'vue'
 import axios from 'axios'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-
+// 必须开启 withCredentials，和后端 setAllowCredentials(true) 对应
+axios.defaults.withCredentials = true;
+// 设置请求头为 JSON（适配后端 @RequestBody 接收）
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 // 消息类型
 interface ChatMessage {
   role: 'user' | 'server'
