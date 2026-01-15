@@ -59,7 +59,7 @@ interface ChatMessage {
   role: 'user' | 'server'
   content: string
 }
-
+const apiBaseUrl = import.meta.env.VITE_API_URL as string
 // 聊天记录列表
 const chatList: Ref<ChatMessage[]> = ref([])
 // 输入框内容
@@ -132,7 +132,7 @@ const handleSend = async (): Promise<void> => {
   }
   try {
     // 2. 调用服务端接口，指定返回数据类型
-    const res = await axios.post<ApiResponse>('/api/chat/startChat', {
+    const res = await axios.post<ApiResponse>(`${apiBaseUrl}/chat/startChat`, {
       message: msg,
     })
 

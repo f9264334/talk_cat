@@ -1,1 +1,2 @@
 /// <reference types="vite/client" />
+VITE_API_URL= 'https://java-api-production-993b.up.railway.app'
