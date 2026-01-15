@@ -14,7 +14,7 @@ export default defineConfig({
   port: 3000,
   proxy:{
     '/api': {
-        target: 'http://localhost:8080', // 服务端地址
+        target: 'https://java-api-production-993b.up.railway.app', // 服务端地址
         changeOrigin: true, // 开启跨域
         rewrite: (path) => path.replace(/^\/api/, '') // 去掉 /api 前缀（可选）
       }
