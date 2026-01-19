@@ -19,7 +19,7 @@
             <span class="input-icon">👤</span>
             <input
               type="text"
-              id="userName"
+              id="username"
               v-model="userName"
               placeholder="请输入账号"
               required
